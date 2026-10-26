@@ -24,7 +24,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                bat 'docker build -t pharmacy-inventory:1.0 .'
+                bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" build -t pharmacy-inventory:1.0 .'
             }
         }
     }
