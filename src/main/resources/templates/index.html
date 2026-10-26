@@ -1,0 +1,219 @@
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pharmacy Inventory System</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            background-color: #f2f7f8;
+            color: #222;
+        }
+
+        h1, h2 {
+            color: #176b67;
+        }
+
+        form, table {
+            margin-bottom: 25px;
+        }
+
+        input {
+            padding: 8px;
+            margin: 5px 0 12px;
+            width: 260px;
+            max-width: 95%;
+            display: block;
+        }
+
+        button, .edit-link, .delete-link {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        button {
+            background-color: #176b67;
+            color: white;
+        }
+
+        .edit-link {
+            background-color: #e0a326;
+            color: black;
+        }
+
+        .delete-link {
+            background-color: #c0392b;
+            color: white;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #176b67;
+            color: white;
+        }
+
+        .message {
+            color: green;
+            font-weight: bold;
+        }
+
+        .error {
+            color: #c0392b;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Medicine Expiry and Pharmacy Inventory System</h1>
+
+    <p>Welcome to the Pharmacy Inventory Management System!</p>
+
+    <p>
+        We will use this application to manage medicines,
+        quantities, prices, and expiry dates.
+    </p>
+
+    <p class="message" th:if="${message}" th:text="${message}"></p>
+
+    <h2>Add or Update Medicine</h2>
+
+    <form th:action="@{/medicines/save}"
+          th:object="${medicine}" method="post">
+
+        <label>Medicine Name:</label>
+        <input type="text" th:field="*{name}" required>
+        <span class="error"
+              th:if="${#fields.hasErrors('name')}"
+              th:errors="*{name}"></span>
+
+        <label>Batch Number:</label>
+        <input type="text" th:field="*{batchNumber}" required>
+        <span class="error"
+              th:if="${#fields.hasErrors('batchNumber')}"
+              th:errors="*{batchNumber}"></span>
+
+        <label>Manufacturer:</label>
+        <input type="text" th:field="*{manufacturer}">
+
+        <label>Quantity:</label>
+        <input type="number" th:field="*{quantity}" min="0" required>
+        <span class="error"
+              th:if="${#fields.hasErrors('quantity')}"
+              th:errors="*{quantity}"></span>
+
+        <label>Price:</label>
+        <input type="number" th:field="*{price}"
+               min="0" step="0.01" required>
+        <span class="error"
+              th:if="${#fields.hasErrors('price')}"
+              th:errors="*{price}"></span>
+
+        <label>Expiry Date:</label>
+        <input type="date" th:field="*{expiryDate}" required>
+        <span class="error"
+              th:if="${#fields.hasErrors('expiryDate')}"
+              th:errors="*{expiryDate}"></span>
+
+        <button type="submit">Save Medicine</button>
+        <a th:href="@{/}">Clear Form</a>
+    </form>
+
+    <h2>Medicine Inventory</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Batch Number</th>
+                <th>Manufacturer</th>
+                <th>Quantity</th>
+                <th>Stock Status</th>
+                <th>Price</th>
+                <th>Expiry Date</th>
+                <th>Expiry Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr th:each="item : ${medicines}">
+                <td th:text="${item.id}"></td>
+                <td th:text="${item.name}"></td>
+                <td th:text="${item.batchNumber}"></td>
+                <td th:text="${item.manufacturer}"></td>
+                <td th:text="${item.quantity}"></td>
+
+                <td>
+                    <span th:if="${item.quantity <= 10}" style="color: red;">
+                        Low Stock
+                    </span>
+                    <span th:unless="${item.quantity <= 10}" style="color: green;">
+                        Sufficient Stock
+                    </span>
+                </td>
+
+                <td th:text="${item.price}"></td>
+                <td th:text="${item.expiryDate}"></td>
+
+                
+                <td>
+                    <span th:if="${item.expiryDate.isBefore(today)}"
+                        style="color: red; font-weight: bold;">
+                        Expired
+                    </span>
+
+                    <span th:if="${!item.expiryDate.isBefore(today)
+                                and !item.expiryDate.isAfter(warningDate)}"
+                        style="color: #d97706; font-weight: bold;">
+                        Expiring Soon
+                    </span>
+
+                    <span th:if="${item.expiryDate.isAfter(warningDate)}"
+                        style="color: green;">
+                        Valid
+                    </span>
+                </td>
+
+                <td>
+                    <a class="edit-link"
+                       th:href="@{/medicines/edit/{id}(id=${item.id})}">
+                        Edit
+                    </a>
+
+                    <a class="delete-link"
+                       th:href="@{/medicines/delete/{id}(id=${item.id})}"
+                       onclick="return confirm('Delete this medicine?');">
+                        Delete
+                    </a>
+                </td>
+            </tr>
+
+            <tr th:if="${#lists.isEmpty(medicines)}">
+                <td colspan="10">No medicines added yet.</td>
+            </tr>
+        </tbody>
+    </table>
+
+</body>
+</html>
